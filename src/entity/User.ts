@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { ObjectType, Field } from 'type-graphql';
 import { Todo } from './Todo';
@@ -17,12 +18,18 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field()
-  @Column({ unique: true })
-  username!: string;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  @Index({ unique: true, where: 'googleId IS NOT NULL' })
+  googleId: string;
 
-  @Column()
-  password!: string;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  @Index({ unique: true, where: 'email IS NOT NULL' })
+  email: string;
+
+  @Column({ nullable: true })
+  password: string;
 
   // @Field(() => [Todo])
   @OneToMany(() => Todo, (todo) => todo.user)

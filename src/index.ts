@@ -1,51 +1,30 @@
 import 'reflect-metadata';
 import http from 'http';
 import express from 'express';
-import session from 'express-session';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection, getConnectionOptions } from 'typeorm';
-import redis from 'redis';
-import connectRedis from 'connect-redis';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { get } from 'lodash';
 
 import config from './config';
+import sessionHandler from './middleware/session';
 import { UserResolver } from './resolvers/UserResolver';
 import { __prod__ } from './constants';
 import { TodoResolver } from './resolvers/TodoResolver';
 import { authChecker } from './utils/authChecker';
 
+import './middleware/passport';
+
 (async () => {
-  const PORT = process.env.PORT || 4000;
   const app = express();
 
   const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: config.origin,
     credentials: true,
   };
   app.use(cors(corsOptions));
-
-  const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient();
-
-  const sessionHandler = session({
-    name: 'qid',
-    store: new RedisStore({
-      client: redisClient,
-      disableTouch: true,
-    }),
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-      httpOnly: true,
-      sameSite: 'lax', // csrf
-      secure: __prod__, // cookie only works in https
-    },
-    saveUninitialized: false,
-    secret: config.sessionSecret,
-    resave: false,
-  });
 
   app.use(sessionHandler);
 
@@ -91,10 +70,10 @@ import { authChecker } from './utils/authChecker';
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
 
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+  httpServer.listen(config.port, () => {
+    console.log(`🚀 Server ready at http://localhost:${config.port}/graphql`);
     console.log(
-      `🚀 Subscsriptions ready at ws://localhost:${PORT}/subscriptions`
+      `🚀 Subscsriptions ready at ws://localhost:${config.port}/subscriptions`
     );
   });
 })();

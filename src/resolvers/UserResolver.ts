@@ -8,14 +8,16 @@ import {
   Ctx,
   Query,
 } from 'type-graphql';
-import { ErrorMessage } from './types';
-import { User } from '../entity/User';
 import bcrypt from 'bcrypt';
-import { Context } from 'src/types';
+import { User } from '../entity';
+import { ErrorMessage } from './types';
+import { Context } from '../types';
+import { authenticateGoogle } from '../middleware/passport';
+import validateEmail from '../utils/validateEmail';
 
 @InputType()
 class UserInput {
-  @Field() username!: string;
+  @Field() email!: string;
   @Field() password!: string;
 }
 
@@ -43,9 +45,9 @@ export class UserResolver {
     @Arg('userInput') userInput: UserInput,
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    if (userInput.username.length < 3) {
+    if (!validateEmail(userInput.email)) {
       return {
-        errors: [{ message: 'Username must be at least 3 characters' }],
+        errors: [{ message: 'Email is an invalid format' }],
       };
     }
     if (userInput.password.length < 8) {
@@ -54,21 +56,20 @@ export class UserResolver {
       };
     }
 
-    const existingUser = await User.findOne({ username: userInput.username });
+    const existingUser = await User.findOne({ email: userInput.email });
     if (existingUser) {
       return {
-        errors: [{ message: 'Username is already taken' }],
+        errors: [{ message: 'Email is already taken' }],
       };
     }
 
     const hashedPassword = await bcrypt.hash(userInput.password, 10);
     const user = await User.create({
-      username: userInput.username,
+      email: userInput.email,
       password: hashedPassword,
     }).save();
 
     req.session.userId = user.id;
-
     return { user };
   }
 
@@ -78,22 +79,21 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
     const user = await User.findOne({
-      username: userInput.username,
+      email: userInput.email,
     });
     if (!user) {
       return {
-        errors: [{ message: 'Invalid username or password' }],
+        errors: [{ message: 'Invalid email or password' }],
       };
     }
     const valid = await bcrypt.compare(userInput.password, user.password);
     if (!valid) {
       return {
-        errors: [{ message: 'Invalid username or password' }],
+        errors: [{ message: 'Invalid email or password' }],
       };
     }
 
     req.session.userId = user.id;
-
     return { user };
   }
 
@@ -106,5 +106,49 @@ export class UserResolver {
     req.session.destroy((err) => console.log(err));
 
     return true;
+  }
+
+  @Mutation(() => UserResponse)
+  async authGoogle(
+    @Arg('accessToken') accessToken: string,
+    @Ctx() { req, res }: Context
+  ): Promise<UserResponse> {
+    req.body = {
+      ...req.body,
+      access_token: accessToken,
+    };
+
+    try {
+      // @ts-ignore
+      const { data, info } = await authenticateGoogle(req, res);
+      console.log(data);
+      if (data) {
+        const existingUser = await User.findOne({
+          where: { googleId: data.profile.id },
+        });
+        if (existingUser) {
+          req.session.userId = existingUser.id;
+          return { user: existingUser };
+        }
+
+        const user = await User.create({
+          googleId: data.profile.id,
+        }).save();
+        req.session.userId = user.id;
+        return { user };
+      }
+
+      if (info) {
+        switch (info.code) {
+          case 'ETIMEDOUT':
+            throw new Error('Failed to reach Google: Try Again');
+          default:
+            throw new Error('something went wrong');
+        }
+      }
+      throw new Error('server error');
+    } catch (error) {
+      return { errors: [{ message: error.message }] };
+    }
   }
 }

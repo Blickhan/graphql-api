@@ -1,11 +1,13 @@
 import { __prod__ } from '../constants';
-import Config from './Config';
+import ServerConfig from './Config';
+import prodConfig from './prod';
+import devConfig from './dev';
 
-let config: Config;
+let config: ServerConfig;
 if (__prod__) {
-  config = require('./prod');
+  config = prodConfig;
 } else {
-  config = require('./dev');
+  config = devConfig;
 }
 
 export default config;

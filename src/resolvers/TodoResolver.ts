@@ -13,8 +13,8 @@ import {
   Publisher,
   Int,
 } from 'type-graphql';
-import { ErrorMessage, BooleanResponse } from './types';
 import { Todo } from '../entity';
+import { ErrorMessage, BooleanResponse } from './types';
 import { Context } from '../types';
 import { Topic } from '../constants';
 
