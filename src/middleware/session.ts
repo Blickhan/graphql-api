@@ -2,11 +2,10 @@ import redis from 'redis';
 import connectRedis from 'connect-redis';
 import session from 'express-session';
 
-import config from '../config';
 import { __prod__ } from '../constants';
 
 const RedisStore = connectRedis(session);
-const redisClient = redis.createClient();
+const redisClient = redis.createClient(process.env.REDIS_URL!);
 
 export default session({
   store: new RedisStore({
@@ -20,6 +19,6 @@ export default session({
     secure: __prod__, // cookie only works in https
   },
   saveUninitialized: false,
-  secret: config.sessionSecret,
+  secret: process.env.SESSION_SECRET!,
   resave: false,
 });

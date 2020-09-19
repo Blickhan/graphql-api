@@ -8,27 +8,24 @@ import { createConnection, getConnectionOptions } from 'typeorm';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { get } from 'lodash';
 
-import config from './config';
+import { __prod__ } from './constants';
 import sessionHandler from './middleware/session';
 import { UserResolver } from './resolvers/UserResolver';
-import { __prod__ } from './constants';
 import { TodoResolver } from './resolvers/TodoResolver';
 import { authChecker } from './utils/authChecker';
-
-import './middleware/passport';
 
 (async () => {
   const app = express();
 
   const corsOptions = {
-    origin: config.origin,
+    origin: process.env.ORIGIN,
     credentials: true,
   };
   app.use(cors(corsOptions));
 
   app.use(sessionHandler);
 
-  const options = await getConnectionOptions(config.nodeEnv);
+  const options = await getConnectionOptions(process.env.NODE_ENV);
   await createConnection({ ...options, name: 'default' });
 
   const schema = await buildSchema({
@@ -70,10 +67,11 @@ import './middleware/passport';
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
 
-  httpServer.listen(config.port, () => {
-    console.log(`🚀 Server ready at http://localhost:${config.port}/graphql`);
+  const PORT = process.env.PORT;
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
     console.log(
-      `🚀 Subscsriptions ready at ws://localhost:${config.port}/subscriptions`
+      `🚀 Subscsriptions ready at ws://localhost:${PORT}/subscriptions`
     );
   });
 })();

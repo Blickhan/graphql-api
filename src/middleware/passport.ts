@@ -1,12 +1,11 @@
 import passport from 'passport';
 const { Strategy: GoogleTokenStrategy } = require('passport-google-token');
-import config from '../config';
 
 passport.use(
   new GoogleTokenStrategy(
     {
-      clientID: config.googleClientId,
-      clientSecret: config.googleClientSecret,
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
     // @ts-ignore
     (accessToken, refreshToken, profile, done) => {

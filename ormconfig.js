@@ -1,8 +1,8 @@
 module.exports = [
   {
     name: 'development',
-    type: 'sqlite',
-    database: 'database.sqlite',
+    type: 'postgres',
+    url: 'postgresql://postgres:postgres@localhost:5432/graphql-todo-app',
     synchronize: true,
     logging: true,
     entities: ['src/entity/**/*.ts'],
