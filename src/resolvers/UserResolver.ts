@@ -12,12 +12,11 @@ import bcrypt from 'bcrypt';
 import { User } from '../entity';
 import { ErrorMessage } from './types';
 import { Context } from '../types';
-import { authenticateGoogle } from '../middleware/passport';
-import validateEmail from '../utils/validateEmail';
+import { authenticateGoogle } from '../services/passport';
 
 @InputType()
 class UserInput {
-  @Field() email!: string;
+  @Field() username!: string;
   @Field() password!: string;
 }
 
@@ -45,9 +44,9 @@ export class UserResolver {
     @Arg('userInput') userInput: UserInput,
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    if (!validateEmail(userInput.email)) {
+    if (userInput.username.length < 3) {
       return {
-        errors: [{ message: 'Email is an invalid format' }],
+        errors: [{ message: 'Username must be at least 3 characters' }],
       };
     }
     if (userInput.password.length < 8) {
@@ -56,16 +55,16 @@ export class UserResolver {
       };
     }
 
-    const existingUser = await User.findOne({ email: userInput.email });
+    const existingUser = await User.findOne({ username: userInput.username });
     if (existingUser) {
       return {
-        errors: [{ message: 'Email is already taken' }],
+        errors: [{ message: 'Username is already taken' }],
       };
     }
 
     const hashedPassword = await bcrypt.hash(userInput.password, 10);
     const user = await User.create({
-      email: userInput.email,
+      username: userInput.username,
       password: hashedPassword,
     }).save();
 
@@ -79,17 +78,17 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
     const user = await User.findOne({
-      email: userInput.email,
+      username: userInput.username,
     });
     if (!user) {
       return {
-        errors: [{ message: 'Invalid email or password' }],
+        errors: [{ message: 'Invalid username or password' }],
       };
     }
     const valid = await bcrypt.compare(userInput.password, user.password);
     if (!valid) {
       return {
-        errors: [{ message: 'Invalid email or password' }],
+        errors: [{ message: 'Invalid username or password' }],
       };
     }
 

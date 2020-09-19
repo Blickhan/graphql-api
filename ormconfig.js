@@ -2,7 +2,7 @@ module.exports = [
   {
     name: 'development',
     type: 'postgres',
-    url: 'postgresql://postgres:postgres@localhost:5432/graphql-todo-app',
+    url: process.env.DATABASE_URL,
     synchronize: true,
     logging: true,
     entities: ['src/entity/**/*.ts'],

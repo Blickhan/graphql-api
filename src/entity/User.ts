@@ -20,13 +20,13 @@ export class User extends BaseEntity {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  @Index({ unique: true, where: 'googleId IS NOT NULL' })
+  @Index({ unique: true, where: '"googleId" IS NOT NULL' })
   googleId: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  @Index({ unique: true, where: 'email IS NOT NULL' })
-  email: string;
+  @Index({ unique: true, where: '"username" IS NOT NULL' })
+  username: string;
 
   @Column({ nullable: true })
   password: string;

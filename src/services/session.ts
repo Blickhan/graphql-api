@@ -1,15 +1,13 @@
-import redis from 'redis';
+import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import session from 'express-session';
-
 import { __prod__ } from '../constants';
 
 const RedisStore = connectRedis(session);
-const redisClient = redis.createClient(process.env.REDIS_URL!);
 
-export default session({
+const sessionHandler = session({
   store: new RedisStore({
-    client: redisClient,
+    client: new Redis(process.env.REDIS_URL),
     disableTouch: true,
   }),
   cookie: {
@@ -22,3 +20,5 @@ export default session({
   secret: process.env.SESSION_SECRET!,
   resave: false,
 });
+
+export default sessionHandler;

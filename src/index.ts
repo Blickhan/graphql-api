@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
+import Redis from 'ioredis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection, getConnectionOptions } from 'typeorm';
@@ -9,7 +10,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { get } from 'lodash';
 
 import { __prod__ } from './constants';
-import sessionHandler from './middleware/session';
+import sessionHandler from './services/session';
 import { UserResolver } from './resolvers/UserResolver';
 import { TodoResolver } from './resolvers/TodoResolver';
 import { authChecker } from './utils/authChecker';
@@ -32,7 +33,10 @@ import { authChecker } from './utils/authChecker';
     resolvers: [UserResolver, TodoResolver],
     validate: true,
     authChecker: authChecker,
-    pubSub: new RedisPubSub(),
+    pubSub: new RedisPubSub({
+      publisher: new Redis(process.env.REDIS_URL),
+      subscriber: new Redis(process.env.REDIS_URL),
+    }),
   });
 
   const apolloServer = new ApolloServer({
