@@ -121,7 +121,7 @@ export class UserResolver {
     try {
       // @ts-ignore
       const { data, info } = await authenticateGoogle(req, res);
-      console.log(data);
+
       if (data) {
         const existingUser = await User.findOne({
           where: { googleId: data.profile.id },

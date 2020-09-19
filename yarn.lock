@@ -300,15 +300,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.55.tgz#0aa266441cb9e1fd3e415a8f619cb7d776667cdd"
   integrity sha512-Vd6xQUVvPCTm7Nx1N7XHcpX6t047ltm7TgcsOr4gFHjeYgwZevo+V7I1lfzHnj5BT5frztZ42+RTG4MwYw63dw==
 
-"@types/passport-google-oauth@^1.0.41":
-  version "1.0.41"
-  resolved "https://registry.yarnpkg.com/@types/passport-google-oauth/-/passport-google-oauth-1.0.41.tgz#e24a8a070dcc5139f0a205c72730b14e83c1405a"
-  integrity sha512-sl79Oau92bilbq6Sv47StzEt98qhu3kMjOBK4GaJX6XtG2a3bwVEebYkwxPrJkz7wb9S1O9x2Dtb3jMqqj9j9Q==
-  dependencies:
-    "@types/express" "*"
-    "@types/passport" "*"
-
-"@types/passport@*", "@types/passport@^1.0.4":
+"@types/passport@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@types/passport/-/passport-1.0.4.tgz#1b35c4e197560d3974fa5f71711b6e9cce0711f0"
   integrity sha512-h5OfAbfBBYSzjeU0GTuuqYEk9McTgWeGQql9g3gUw2/NNCfD7VgExVRYJVVeU13Twn202Mvk9BT0bUrl30sEgA==
