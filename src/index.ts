@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import 'reflect-metadata';
 import http from 'http';
 import express from 'express';
